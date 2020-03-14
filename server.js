@@ -2,36 +2,27 @@ const express = require('express');
 const path = require('path');
 const app = express()
 const bodyParser=require("body-parser");
+const fs=require("fs")
+const data=fs.readFileSync('./database.json')
+const conf=JSON.parse(data)
+const mysql=require("mysql")
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({urlencoded:true}));
 
+const connection=mysql.createConnection({
+    host:conf.host, 
+    user:conf.user,
+    password:conf.password,
+    database: conf.database
+})
+
+connection.connect()
+
 app.get("/api/customers", (req,res) => {
-  res.send([{
-    id:1,
-    image:"http://placeimg.com/64/64/1",
-    name:'Yang',
-    birthday:'970806',
-    gender:'Male',
-    job:"Student"
-  },
-    {
-    id:2,
-    image:"http://placeimg.com/64/64/2",
-    name:'Kim',
-    birthday:'960302',
-    gender:'Male',
-    job:"Desinger"
-  },
-    {
-    id:3,
-    image:"http://placeimg.com/64/64/3",
-    name:'Lee',
-    birthday:'970322',
-    gender:'Female',
-    job:"Programmer"
-  }]
-  )
+  connection.query(`SELECT * FROM customers`,(err,rows)=>{
+    res.send(rows)
+  })
 })
 
 const PORT = process.env.PORT || 8000;
